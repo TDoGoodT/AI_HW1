@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "hw1"
+version = "0.1.0"
+description = ""
+authors = ["Snir Bachar <snir@quantum-machines.co>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+numpy = "^1.24.3"
+gym = "^0.26.2"
+jupyter = "^1.0.0"
+heapdict = "^1.0.1"
+
+[tool.poetry.group.dev.dependencies]
+mypi = "^0.0.3"
+black = "^23.3.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
