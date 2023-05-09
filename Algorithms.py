@@ -31,7 +31,7 @@ class DFSAgent():
                     result = dfs(next_state, path + [action], cost + action_cost, explored | {next_state})
                     if result[0]:
                         return result
-            return [], np.inf, 0.
+            return [], np.inf, set()
         return dfs(env.reset(), [env.reset()], 0, set())
 
 
