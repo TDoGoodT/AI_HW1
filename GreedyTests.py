@@ -9,6 +9,7 @@ MAP = [
         "FLFHFFFG",
     ]
 BOARD_SIZE = 8
+from queue import PriorityQueue
 import time
 from IPython.display import clear_output
 import numpy as np
@@ -49,9 +50,14 @@ def test_greedy_agent():
     
     path, cost, explored = agent.search(env)
     print(f"Path: {path}, cost: {cost}, explored: {explored}")
+    print_solution(path, env)
     
     
-
+def test_pq():
+    pq = PriorityQueue()
+    pq.put((0, 0))
+    pq.put((1, 1))
+    assert pq.get() == (0, 0), f"pq.get() should be (0, 0)"
 
 def test_h_manhattan():
     # Test distance between two adjacent cells]

@@ -57,7 +57,7 @@ def h_sap(state: int, goal: int, acc_cost: int):
 
 def step(state, action, env):
     env.set_state(state)
-    return env.step(action)
+    return action, *env.step(action)
 class GreedyAgent():
     def __init__(self):
         self.heuristic_fn = h_sap
@@ -81,8 +81,11 @@ class GreedyAgent():
                 if current == goal:
                     path = []
                     while current is not None:
-                        path.append(current)
-                        current = parent[current]
+                        current_action = parent[current]
+                        current = None
+                        if current_action is not None:
+                            current, action = current_action
+                            path.append(action)
                     path.reverse()
                     return path, current_cost, set()
 
@@ -90,13 +93,13 @@ class GreedyAgent():
                 visited.add(current)
 
                 # Check the neighbors of the current node
-                for neighbor, cost, terminated in [step(current, action, env) for action in range(env.action_space.n)]:
+                for action, neighbor, cost, terminated in [step(current, action, env) for action in range(env.action_space.n)]:
                     # If the neighbor has not been visited, add it to the priority queue
                     if neighbor not in visited:
                         priority = self.heuristic_fn(neighbor, goal, cost) # Calculate the priority using a heuristic function
                         pq.put((current_cost + cost + priority, neighbor))
                         visited.add(neighbor)
-                        parent[neighbor] = current
+                        parent[neighbor] = (current, action)
 
             # If we couldn't find a path to the goal, return None
             return [], np.inf, set()
