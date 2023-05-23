@@ -208,7 +208,7 @@ class GreedyAgent:
                         parent[neighbor] = (current, action)
 
             # If we couldn't find a path to the goal, return None
-            return [], np.inf, set()
+            return [], np.inf, len(visited)
 
         return greedy_search({env.reset(): []}, 0, env.get_goal_states()[0])
 
