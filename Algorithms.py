@@ -132,12 +132,25 @@ class UCSAgent():
 
         return 'NO SOLUTION HAS BEEN FOUND'
 
-
+def step(state, action, env):
+    env.set_state(state)
+    return action, *env.step(action)
 class GreedyAgent():
+    
     def __init__(self):
-        self.heuristic_fn = h_sap
+        pass
 
     def search(self, env: FrozenLakeEnv) -> Tuple[List[int], int, set[int]]:
+        ROWS = env.nrow
+        COLS = env.ncol
+        def h_manhattan(state: int, goal: int):
+            y_distance = np.abs(state // ROWS - goal // ROWS)
+            x_distance = np.abs(state % COLS - goal % COLS)
+            return y_distance + x_distance
+
+        def h_sap(state: int, goal: int, acc_cost: int):
+            return min(h_manhattan(state, goal), acc_cost)
+        
         def greedy_search(graph, start, goal):
             # Create an empty priority queue and insert the start node
             pq = PriorityQueue()
@@ -171,7 +184,7 @@ class GreedyAgent():
                 for action, neighbor, cost, terminated in [step(current, action, env) for action in range(env.action_space.n)]:
                     # If the neighbor has not been visited, add it to the priority queue
                     if neighbor not in visited:
-                        priority = self.heuristic_fn(neighbor, goal, cost) # Calculate the priority using a heuristic function
+                        priority = h_sap(neighbor, goal, cost) # Calculate the priority using a heuristic function
                         pq.put((current_cost + cost + priority, neighbor))
                         visited.add(neighbor)
                         parent[neighbor] = (current, action)
