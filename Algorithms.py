@@ -7,6 +7,7 @@ import heapdict
 
 BOARD_SIZE = 8
 
+
 class BFSAgent():
     # def __init__(self) -> None:
     #     raise NotImplementedError
@@ -25,9 +26,9 @@ class BFSAgent():
 
         state = self.env.get_initial_state()
         dic_state = {'state': state, 'actions': [], 'total_cost': cost}
-        states.append(dic_state)        # List of nodes for different paths that were tested
-        history.append(state)           # List of history of which state has been tested
-        OPEN.append(dic_state)          # List of open nodes to be open in the loop
+        states.append(dic_state)  # List of nodes for different paths that were tested
+        history.append(state)  # List of history of which state has been tested
+        OPEN.append(dic_state)  # List of open nodes to be open in the loop
         if self.env.is_final_state(states[-1]['state']):  # Check whether the initial condition is hte goal
             actions = states[-1]['actions']
             total_cost = states[-1]['total_cost']
@@ -36,22 +37,22 @@ class BFSAgent():
         while len(OPEN) > 0:
             cur = OPEN[0]
             expanded += 1
-            for action, successor in env.succ(cur['state']).items():        # Expand each state via its SUCCESSOR
-                if cur['total_cost'] == np.inf:                             # If a hole has approached, stay with the father
+            for action, successor in env.succ(cur['state']).items():  # Expand each state via its SUCCESSOR
+                if cur['total_cost'] == np.inf:  # If a hole has approached, stay with the father
                     dic_succ = cur
-                else:                                                       # If not a hole, define it as a state_dic and a path
+                else:  # If not a hole, define it as a state_dic and a path
                     dic_succ = {'state': successor[0], 'actions': cur['actions'] + [action],
                                 'total_cost': cur['total_cost'] + successor[1]}
-                if dic_succ['state'] in history:                            # If such state is repeated, ignore it
+                if dic_succ['state'] in history:  # If such state is repeated, ignore it
                     continue
-                history.append(dic_succ['state'])                           # Add the state to history
-                states.append(dic_succ)                                     # Add the state_dic and data to the states
-                OPEN.append(dic_succ)                                       # Add the state_dic to OPEN list to be open in the future
-                if self.env.is_final_state(states[-1]['state']):            # Check whether the goal ahs been reached
+                history.append(dic_succ['state'])  # Add the state to history
+                states.append(dic_succ)  # Add the state_dic and data to the states
+                OPEN.append(dic_succ)  # Add the state_dic to OPEN list to be open in the future
+                if self.env.is_final_state(states[-1]['state']):  # Check whether the goal ahs been reached
                     actions = states[-1]['actions']
                     total_cost = states[-1]['total_cost']
-                    return actions, total_cost, expanded                    # Return the goal's data and path
-            OPEN = OPEN[1:]                                                 # FIFO on each opened node
+                    return actions, total_cost, expanded  # Return the goal's data and path
+            OPEN = OPEN[1:]  # FIFO on each opened node
 
         return 'NO SOLUTION HAS BEEN FOUND'
 
@@ -75,8 +76,8 @@ class DFSAgent():
                     if result[0]:
                         return result
             return [], np.inf, set()
-        return dfs(env.reset(), [env.reset()], 0, set())
 
+        return dfs(env.reset(), [env.reset()], 0, set())
 
 
 class UCSAgent():
@@ -99,53 +100,59 @@ class UCSAgent():
 
         state = self.env.get_initial_state()
         dic_state = {'state': state, 'actions': [], 'total_cost': cost}
-        states.append(dic_state)        # List of nodes for different paths that were tested
-        OPEN[state] = dic_state         # Dict of open nodes to be open in the loop
-        OPEN[state] = (dic_state['total_cost'], state)    # Heapdict of open nodes to be open in the loop
-        OPEN_full[state] = dic_state                      # Dict of open nodes to be open in the loop (full)
+        states.append(dic_state)  # List of nodes for different paths that were tested
+        OPEN[state] = dic_state  # Dict of open nodes to be open in the loop
+        OPEN[state] = (dic_state['total_cost'], state)  # Heapdict of open nodes to be open in the loop
+        OPEN_full[state] = dic_state  # Dict of open nodes to be open in the loop (full)
 
         while len(OPEN) > 0:
-            cur_snc = OPEN.popitem()                                # Getting the state with the minimum cost
-            cur = OPEN_full.pop(cur_snc[0])                         # Get its whole data
-            CLOSE[cur['state']] = cur                               # Close it
+            cur_snc = OPEN.popitem()  # Getting the state with the minimum cost
+            cur = OPEN_full.pop(cur_snc[0])  # Get its whole data
+            CLOSE[cur['state']] = cur  # Close it
 
-            if self.env.is_final_state(cur['state']):                # Check whether the goal ahs been reached
+            if self.env.is_final_state(cur['state']):  # Check whether the goal ahs been reached
                 actions = cur['actions']
                 total_cost = cur['total_cost']
-                return actions, total_cost, expanded                 # Return the goal's data and path
+                return actions, total_cost, expanded  # Return the goal's data and path
 
             expanded += 1
             for action, successor in env.succ(cur['state']).items():  # Expand each state via its SUCCESSOR
-                if successor[1] == np.inf or successor[0] in CLOSE:     # If a hole has approached, stay with the father
+                if successor[1] == np.inf or successor[0] in CLOSE:  # If a hole has approached, stay with the father
                     continue
-                else:                                                       # If not a hole, define it as a state_dic and a path
+                else:  # If not a hole, define it as a state_dic and a path
                     dic_succ = {'state': successor[0], 'actions': cur['actions'] + [action],
                                 'total_cost': cur['total_cost'] + successor[1]}
-                states.append(dic_succ)                                     # Add the state_dic and data to the states
+                states.append(dic_succ)  # Add the state_dic and data to the states
                 if dic_succ['state'] not in CLOSE and dic_succ['state'] not in OPEN:
-                    OPEN[dic_succ['state']] = (dic_succ['total_cost'], dic_succ['state'])  # Add state_dic to open if not seen before
+                    OPEN[dic_succ['state']] = (
+                    dic_succ['total_cost'], dic_succ['state'])  # Add state_dic to open if not seen before
                     OPEN_full[dic_succ['state']] = dic_succ
                 elif dic_succ['state'] in OPEN and OPEN[dic_succ['state']][0] > dic_succ['total_cost']:
-                    OPEN[dic_succ['state']] = (dic_succ['total_cost'], dic_succ['state'])  # Update state_dic to open if f is lower
+                    OPEN[dic_succ['state']] = (
+                    dic_succ['total_cost'], dic_succ['state'])  # Update state_dic to open if f is lower
                     OPEN_full[dic_succ['state']] = dic_succ
                     CLOSE.pop(dic_succ['state'])  # get state_dic out of CLOSE if cost is lower
 
         return 'NO SOLUTION HAS BEEN FOUND'
 
+
 def step(state, action, env):
     env.set_state(state)
     return action, *env.step(action)
-class GreedyAgent():
-    
+
+
+class GreedyAgent:
+
     def __init__(self):
         pass
 
     def search(self, env: FrozenLakeEnv) -> Tuple[List[int], int, set[int]]:
-        ROWS = env.nrow
-        COLS = env.ncol
+        rows = env.nrow
+        cols = env.ncol
+
         def h_manhattan(state: int, goal: int):
-            y_distance = np.abs(state // ROWS - goal // ROWS)
-            x_distance = np.abs(state % COLS - goal % COLS)
+            y_distance = np.abs(state // rows - goal // rows)
+            x_distance = np.abs(state % cols - goal % cols)
             return y_distance + x_distance
 
         def h_msap(state: int, goals, acc_cost: int):
@@ -160,6 +167,7 @@ class GreedyAgent():
             # Add the portal's cost
             h_man_goal.append(acc_cost)
             return min(h_man_goal)
+
         def greedy_search(graph, start, goal):
             # Create an empty priority queue and insert the start node
             pq = PriorityQueue()
@@ -184,16 +192,17 @@ class GreedyAgent():
                             current, action = current_action
                             path.append(action)
                     path.reverse()
-                    return path, current_cost, set()
+                    return path, current_cost, len(visited)
 
                 # Mark the current node as visited
                 visited.add(current)
 
                 # Check the neighbors of the current node
-                for action, neighbor, cost, terminated in [step(current, action, env) for action in range(env.action_space.n)]:
+                for action, neighbor, cost, terminated in [step(current, action, env) for action in
+                                                           range(env.action_space.n)]:
                     # If the neighbor has not been visited, add it to the priority queue
                     if neighbor not in visited:
-                        priority = h_msap(neighbor, goal, cost) # Calculate the priority using a heuristic function
+                        priority = h_msap(neighbor, goal, cost)  # Calculate the priority using a heuristic function
                         pq.put((current_cost + cost + priority, neighbor))
                         visited.add(neighbor)
                         parent[neighbor] = (current, action)
@@ -202,6 +211,8 @@ class GreedyAgent():
             return [], np.inf, set()
 
         return greedy_search({env.reset(): []}, 0, env.get_goal_states()[0])
+
+
 class WeightedAStarAgent():
 
     # def __init__(self):
@@ -242,45 +253,48 @@ class WeightedAStarAgent():
         states = []
         state = self.env.get_initial_state()
         dic_state = {'state': state, 'actions': [], 'total_cost': cost,
-                     'h':WeightedAStarAgent.h_msap(state,goal_state,p_cost, env), 'g': 0}
-        dic_state['f'] = h_weight*dic_state['h'] + (1-h_weight)*dic_state['g']
-        states.append(dic_state)        # List of nodes for different paths that were tested
-        OPEN[state] = (dic_state['f'], state)    # Heapdict of open nodes to be open in the loop
-        OPEN_full[state] = dic_state             # Dict of open nodes to be open in the loop (full)
+                     'h': WeightedAStarAgent.h_msap(state, goal_state, p_cost, env), 'g': 0}
+        dic_state['f'] = h_weight * dic_state['h'] + (1 - h_weight) * dic_state['g']
+        states.append(dic_state)  # List of nodes for different paths that were tested
+        OPEN[state] = (dic_state['f'], state)  # Heapdict of open nodes to be open in the loop
+        OPEN_full[state] = dic_state  # Dict of open nodes to be open in the loop (full)
 
         while len(OPEN) > 0:
-            cur_snf = OPEN.popitem()                                # Getting the state with the minimum f
-            cur = OPEN_full.pop(cur_snf[0])                         # Get its whole data
-            CLOSE[cur['state']] = cur                               # Close it
+            cur_snf = OPEN.popitem()  # Getting the state with the minimum f
+            cur = OPEN_full.pop(cur_snf[0])  # Get its whole data
+            CLOSE[cur['state']] = cur  # Close it
 
-            if self.env.is_final_state(cur['state']):                # Check whether the goal ahs been reached
+            if self.env.is_final_state(cur['state']):  # Check whether the goal ahs been reached
                 actions = cur['actions']
                 total_cost = cur['total_cost']
-                return actions, total_cost, expanded                 # Return the goal's data and path
+                return actions, total_cost, expanded  # Return the goal's data and path
 
             expanded += 1
             for action, successor in env.succ(cur['state']).items():  # Expand each state via its SUCCESSOR
-                if successor[1] == np.inf or successor[0] in CLOSE:     # If a hole has approached, stay with the father
+                if successor[1] == np.inf or successor[0] in CLOSE:  # If a hole has approached, stay with the father
                     continue
-                else:                                                       # If not a hole, define it as a state_dic and a path
+                else:  # If not a hole, define it as a state_dic and a path
                     dic_succ = {'state': successor[0], 'actions': cur['actions'] + [action],
                                 'total_cost': cur['total_cost'] + successor[1]}
                     dic_succ['h'] = WeightedAStarAgent.h_msap(dic_succ['state'], goal_state, p_cost, env)
                     dic_succ['g'] = dic_succ['total_cost']
-                    dic_succ['f'] = h_weight*dic_succ['h'] + (1-h_weight)*dic_succ['g']
-                states.append(dic_succ)                                                 # Add the state_dic and data to the states
+                    dic_succ['f'] = h_weight * dic_succ['h'] + (1 - h_weight) * dic_succ['g']
+                states.append(dic_succ)  # Add the state_dic and data to the states
                 if dic_succ['state'] not in CLOSE and dic_succ['state'] not in OPEN:
-                    OPEN[dic_succ['state']] = (dic_succ['f'], dic_succ['state'])        # Add state_dic to open if not seen before
+                    OPEN[dic_succ['state']] = (
+                    dic_succ['f'], dic_succ['state'])  # Add state_dic to open if not seen before
                     OPEN_full[dic_succ['state']] = dic_succ
                 elif dic_succ['state'] in OPEN:
                     if dic_succ['f'] < OPEN[dic_succ['state']][0]:
-                        OPEN[dic_succ['state']] = (dic_succ['f'], dic_succ['state'])    # Update state_dic to open if f is lower
+                        OPEN[dic_succ['state']] = (
+                        dic_succ['f'], dic_succ['state'])  # Update state_dic to open if f is lower
                         OPEN_full[dic_succ['state']] = dic_succ
                 else:
                     if dic_succ['f'] < CLOSE[dic_succ['state']]['f']:
-                        OPEN[dic_succ['state']] = (dic_succ['f'], dic_succ['state'])    # Add state_dic to open if not seen before
-                        OPEN_full[dic_succ['state']] = dic_succ                         # Do that in cases that node was closed already
-                        CLOSE.pop(dic_succ['state'])                                    # get state_dic out of CLOSE if f is lower
+                        OPEN[dic_succ['state']] = (
+                        dic_succ['f'], dic_succ['state'])  # Add state_dic to open if not seen before
+                        OPEN_full[dic_succ['state']] = dic_succ  # Do that in cases that node was closed already
+                        CLOSE.pop(dic_succ['state'])  # get state_dic out of CLOSE if f is lower
 
         return 'NO SOLUTION HAS BEEN FOUND'
 
@@ -353,7 +367,8 @@ class IDAStarAgent():
             if successor[1] == np.inf or successor[0] in path:  # If a hole has approached, stay with the father
                 continue
             # The recursive DFS-f Function
-            result = IDAStarAgent.DFS_f(successor[0], g+successor[1], path+[successor[0]], f_limit, problem, actions+[action])
+            result = IDAStarAgent.DFS_f(successor[0], g + successor[1], path + [successor[0]], f_limit, problem,
+                                        actions + [action])
             if result != False:
                 return result
         return False
