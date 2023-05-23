@@ -148,9 +148,18 @@ class GreedyAgent():
             x_distance = np.abs(state % COLS - goal % COLS)
             return y_distance + x_distance
 
-        def h_sap(state: int, goal: int, acc_cost: int):
-            return min(h_manhattan(state, goal), acc_cost)
-        
+        def h_msap(state: int, goals, acc_cost: int):
+            # Checking if goals is single or many
+            if type(goals) == int:
+                # define as an iterable list
+                goals = [goals]
+            # Iterate and calculate manhattan distance
+            h_man_goal = []
+            for goal in goals:
+                h_man_goal.append(h_manhattan(state, goal))
+            # Add the portal's cost
+            h_man_goal.append(acc_cost)
+            return min(h_man_goal)
         def greedy_search(graph, start, goal):
             # Create an empty priority queue and insert the start node
             pq = PriorityQueue()
@@ -184,7 +193,7 @@ class GreedyAgent():
                 for action, neighbor, cost, terminated in [step(current, action, env) for action in range(env.action_space.n)]:
                     # If the neighbor has not been visited, add it to the priority queue
                     if neighbor not in visited:
-                        priority = h_sap(neighbor, goal, cost) # Calculate the priority using a heuristic function
+                        priority = h_msap(neighbor, goal, cost) # Calculate the priority using a heuristic function
                         pq.put((current_cost + cost + priority, neighbor))
                         visited.add(neighbor)
                         parent[neighbor] = (current, action)
